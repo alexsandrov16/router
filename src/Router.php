@@ -5,6 +5,7 @@ namespace Mk4U\Router;
 use Mk4U\Http\Request;
 use Mk4U\Http\Response;
 use Mk4U\Http\Status;
+use Mk4U\Router\Exceptions\RouterException;
 
 /**
  * Router class
@@ -21,10 +22,12 @@ class Router
         '(:alpha)'    => '[a-zA-Z]+',     //caracteres alfabeticos
 
     ];
-    /** @param Request request Objeto Solicitud HTTP*/
+    /** @param Request $request Objeto Solicitud HTTP*/
     private static Request $request;
-    /** @param Response response Objeto Respuesta HTTP*/
+    /** @param Response $response Objeto Respuesta HTTP*/
     private static Response $response;
+    /** @param string $template Plantilla de error proporcionada por el usuario*/
+    protected static ?array $template;
 
     /**
      * Resuelve la ruta y procesa la acción
@@ -46,19 +49,10 @@ class Router
                     //Controllers Instances
                     return self::getController($value['action'], self::setParameters($matchs));
                 }
-                return static::error(Status::MethodNotAllowed);
+                throw new RouterException(Status::MethodNotAllowed);
             }
         }
-        return static::error(Status::NotFound);
-    }
-
-    /**
-     * Renderiza la pagina de error
-     */
-    public static function error(Status $status=Status::NotFound): Response
-    {
-        
-        return self::$response->plain($status->message(),$status);
+        throw new RouterException(Status::NotFound);
     }
 
     /**
